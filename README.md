@@ -13,20 +13,29 @@ The project solves the SVM optimization problem using quadratic programming.
 
 ### 1. Primal Problem (Soft-Margin)
 We minimize the classification error while maximizing the margin:
+
 $$ \min_{w, \gamma, s} \frac{1}{2}w^T w + \nu e^T s $$
+
 Subject to:
+
 $$ -Y(Aw + \gamma e) - s + e \le 0 $$
+
 $$ -s \le 0 $$
 
 ### 2. Dual Problem
 We maximize the Lagrangian multipliers to find the support vectors:
+
 $$ \max_{\lambda} \lambda^T e - \frac{1}{2} \lambda^T Y A A^T Y \lambda $$
+
 Subject to:
+
 $$ \lambda^T Y e = 0 $$
+
 $$ 0 \le \lambda \le \nu $$
 
 ### 3. Kernel Trick
 For non-linear problems, we replaced the dot product with a **Gaussian Kernel (RBF)**:
+
 $$ K(x, y) = \exp \left( - \frac{||x - y||^2}{2\sigma^2} \right) $$
 
 ## Experiments & Datasets
