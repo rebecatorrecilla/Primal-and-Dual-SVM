@@ -1,0 +1,35 @@
+reset;
+model svm_primal.mod;
+#data lin_sep_data.dat;
+data bank_data.dat;
+show;
+expand;
+
+option solver cplex;
+option cplex_options 'timing=1';
+option cplex_options  'baropt timing=1';
+option log_file ("resultats/primal_bank" & "_" & nu & ".txt");
+
+solve;
+
+display gamma, w, s, separation; 
+display nu;
+display m,n;
+
+
+# Prediction
+param y_pred {1..m_test};
+let {i in {1..m_test}} y_pred[i] := if (gamma + sum{j in {1..n}}w[j]*A_test[i,j]) <= 0 then -1 else 1;
+display y_pred;
+
+
+# Evaluation metrics: accuracy
+param wrong_class default 0;
+for {i in {1..m_test}} {
+	if y_pred[i] != y_test[i] then
+		let wrong_class := wrong_class + 1;
+}
+param accuracy = (m_test - wrong_class) / m_test;
+display accuracy;
+
+option log_file "";

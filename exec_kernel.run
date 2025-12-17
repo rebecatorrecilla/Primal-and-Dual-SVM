@@ -1,0 +1,78 @@
+# -------------------------- DUAL FORMULATION -------------------------- #
+
+reset;
+model svm_dual.mod;
+data bank_data.dat;
+show;
+option solver CPLEX;
+solve;
+display lambda;  
+
+
+# Dual formulation from primal
+param w {1..n};
+let {j in {1..n}} w[j] := sum{i in {1..m}} lambda[i]*y_train[i]*A_train[i,j];
+display w;
+
+param gamma;
+for {i in {1..m}} {
+	if lambda[i] > 0.00001 and lambda[i] < 0.9999*nu then {
+		let gamma := 1/y_train[i] - sum{j in {1..n}} w[j]*A_train[i,j];
+		break;
+	}
+}
+display gamma;
+
+# Prediction
+param y_pred {1..m_test};
+let {i in {1..m_test}} y_pred[i] := if (gamma + sum{j in {1..n}}w[j]*A_test[i,j]) <= 0 then -1 else 1;
+display y_pred;
+
+
+# Accuracy
+param wrong_class default 0;
+for {i in {1..m_test}} {
+	if y_pred[i] != y_test[i] then
+		let wrong_class := wrong_class + 1;
+}
+param accuracy = (m_test - wrong_class) / m_test;
+display accuracy;
+
+
+
+# -------------------------- DUAL KERNEL FORMUALTION -------------------------- #
+
+reset;
+model svm_kernel.mod;
+data bank_data.dat;
+show;
+option solver CPLEX;
+solve;
+display lambda;
+
+# Prediction
+param y_pred {1..m_test};
+let {j in {1..m_test}} y_pred[j] := sum{i in {1..m}}lambda[i]*y_train[i]*exp(-(sum{k in 1..n}((A_train[i,k]-A_test[j,k])^2)/(2*sigma^2)));
+
+param gamma;
+for {i in {1..m}} {
+	if lambda[i] > 0.00001 and lambda[i] < 0.9999*nu then {
+		let gamma := 1/y_train[i] - (sum{j in {1..m}} lambda[j]*y_train[j]*exp(-(sum{k in 1..n}((A_train[i,k]-A_train[j,k])^2)/(2*sigma^2)))) ;
+		break;
+	}
+}
+
+let {j in {1..m_test}} y_pred[j] := if (y_pred[j] + gamma) <= 0 then -1 else 1 ;
+display y_pred;
+
+
+# Accuracy
+param wrong_class default 0;
+for {i in {1..m_test}} {
+	if y_pred[i] != y_test[i] then
+		let wrong_class := wrong_class + 1;
+}
+param accuracy = (m_test - wrong_class) / m_test;
+display accuracy;
+
+

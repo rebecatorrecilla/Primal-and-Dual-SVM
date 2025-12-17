@@ -1,0 +1,78 @@
+# -------------------------- PRIMAL FORMULATION -------------------------- #
+
+reset;
+model svm_primal.mod;
+data lin_sep_data.dat;
+#data bank_data.dat;
+show;
+expand;
+option solver cplexamp;
+solve;
+# option solver cplexamp;
+# option cplex_options 'timing 1';
+# solve;
+display gamma, w, s, separation; 
+display nu;
+display m,n;
+
+
+# Prediction
+param y_pred {1..m_test};
+let {i in {1..m_test}} y_pred[i] := if (gamma + sum{j in {1..n}}w[j]*A_test[i,j]) <= 0 then -1 else 1;
+display y_pred;
+
+
+# Evaluation metrics: accuracy
+param wrong_class default 0;
+for {i in {1..m_test}} {
+	if y_pred[i] != y_test[i] then
+		let wrong_class := wrong_class + 1;
+}
+param accuracy = (m_test - wrong_class) / m_test;
+display accuracy;
+
+
+# -------------------------- DUAL FORMULATION -------------------------- #
+
+reset;
+model svm_dual.mod;
+data lin_sep_data.dat;
+#data bank_data.dat;
+show;
+expand;
+option solver cplexamp;
+solve;
+display lambda;  
+
+
+# Dual formulation from primal
+param w {1..n};
+let {j in {1..n}} w[j] := sum{i in {1..m}} lambda[i]*y_train[i]*A_train[i,j];
+display w;
+
+param gamma;
+for {i in {1..m}} {
+	if lambda[i] > 0.00001 and lambda[i] < 0.9999*nu then {
+		let gamma := 1/y_train[i] - sum{j in {1..n}} w[j]*A_train[i,j];
+		break;
+	}
+}
+display gamma;
+
+
+# -------------------------- KERNEL FORMULATION -------------------------- #
+reset;
+model svm_kernel.mod
+data lin_sep_data.dat;
+#data bank_data.dat
+show;
+expand;
+option solver cplexamp;
+solve;
+display lambda; 
+
+
+
+
+
+
