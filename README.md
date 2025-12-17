@@ -5,7 +5,7 @@
 ![Subject](https://img.shields.io/badge/Course-Mathematical_Optimization-green)
 ![Institution](https://img.shields.io/badge/University-UPC-blue)
 
-## 📄 Project Overview
+## Project Overview
 The main objective is the manual implementation and analysis of **Support Vector Machines (SVM)** from an optimization perspective. The project explores both the **Primal** and **Dual** formulations, verifies the Strong Duality theorem, and implements **Kernels** (Gaussian/RBF) to handle non-linearly separable data.
 
 ## Mathematical Formulation
